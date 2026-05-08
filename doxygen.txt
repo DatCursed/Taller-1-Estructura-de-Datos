@@ -1,0 +1,173 @@
+/// @file Song.hpp
+/// @brief Definición de la clase Song para el reproductor de música.
+
+/// @class Song
+/// @brief Representa una pista musical dentro del reproductor.
+/// 
+/// Almacena los metadatos esenciales de una canción, incluyendo su identificador 
+/// único, información del artista, álbum y la ruta física del archivo.
+class Song {
+    // ... (atributos privados)
+
+public:
+    /// @brief Constructor por defecto. Inicializa una canción vacía.
+    Song();
+
+    /// @brief Constructor parametrizado.
+    /// @param id Identificador único correlativo de la canción.
+    /// @param title Nombre de la canción.
+    /// @param artist Nombre del artista.
+    /// @param album Nombre del álbum.
+    /// @param year Año de lanzamiento.
+    /// @param durationSeconds Duración total de la canción en segundos.
+    /// @param filePath Ruta absoluta o relativa del archivo de audio.
+    Song(int id, string title, string artist, string album, int year, int durationSeconds, string filePath);
+
+    // ... (Getters y Setters omitidos por brevedad, no suelen documentarse si son obvios)
+
+    /// @brief Formatea la duración de la canción a texto.
+    /// @return Un string con el formato "Minutos:Segundos" (ej. "3:05").
+    string getFormattedDuration() const;
+
+    /// @brief Serializa los datos de la canción para guardarlos en un archivo de texto.
+    /// @param delimiter El carácter utilizado para separar los campos (por defecto ',').
+    /// @return Un string con todos los atributos concatenados e interlineados por el delimitador.
+    string toFileString(char delimiter = ',') const;
+
+    /// @brief Sobrecarga del operador de igualdad.
+    /// @param other La otra canción con la que se comparará.
+    /// @return true si ambas canciones tienen el mismo ID, false en caso contrario.
+    bool operator==(const Song& other) const;
+};
+
+
+
+
+/// @file LinkedList.hpp
+/// @brief Implementación manual de una Lista Doblemente Enlazada.
+
+/// @class LinkedList
+/// @brief Estructura de datos genérica basada en nodos doblemente enlazados.
+/// @tparam T El tipo de dato que almacenará la lista (ej. Song).
+template <typename T>
+class LinkedList {
+public:
+    /// @struct Node
+    /// @brief Elemento individual de la lista que almacena el dato y los punteros de enlace.
+    struct Node {
+        T data;     ///< El dato almacenado en el nodo.
+        Node* next; ///< Puntero al siguiente nodo en la lista.
+        Node* prev; ///< Puntero al nodo anterior en la lista.
+    };
+
+    /// @brief Inserta un nuevo elemento al final de la lista.
+    /// @param value El dato a insertar.
+    void pushBack(T value);
+
+    /// @brief Inserta un nuevo elemento al inicio de la lista.
+    /// @param value El dato a insertar.
+    void pushFront(T value);
+
+    /// @brief Extrae y elimina el elemento al inicio de la lista.
+    /// @throw std::runtime_error Si la lista está vacía.
+    /// @return El valor del elemento extraído.
+    T popFront();
+
+    /// @brief Obtiene un elemento en una posición específica sin eliminarlo.
+    /// @param index El índice base cero del elemento.
+    /// @throw std::out_of_range Si el índice es menor a 0 o mayor/igual al tamaño de la lista.
+    /// @return El valor almacenado en el índice solicitado.
+    T get(int index) const;
+
+    /// @brief Obtiene el puntero al primer nodo de la lista.
+    /// @return Puntero a la cabeza de la lista (head), o nullptr si está vacía.
+    Node* getHead() const;
+
+    /// @brief Verifica si la estructura no contiene elementos.
+    /// @return true si el tamaño es 0, false en caso contrario.
+    bool isEmpty() const;
+
+    /// @brief Obtiene la cantidad de elementos almacenados.
+    /// @return El número entero de nodos en la lista.
+    int getSize() const;
+
+    /// @brief Elimina todos los elementos y libera la memoria dinámica asignada.
+    void clear();
+};
+
+
+
+/// @file FileManager.hpp
+/// @brief Utilidad estática para la gestión de archivos de texto.
+
+/// @class FileManager
+/// @brief Clase utilitaria encargada de la persistencia de datos del reproductor.
+/// 
+/// Proporciona métodos estáticos para leer, escribir y procesar las líneas 
+/// del archivo fuente de canciones (music_source.txt) sin necesidad de instanciar la clase.
+class FileManager {
+public:
+    /// @brief Analiza una línea de texto para determinar qué delimitador usa (coma, punto y coma, etc.).
+    /// @param line La línea de texto extraída del archivo.
+    /// @return El carácter delimitador detectado.
+    static char detectDelimiter(const string& line);
+
+    /// @brief Convierte una línea de texto cruda en un objeto Song instanciado.
+    /// @param line La línea de texto a procesar.
+    /// @param delimiter El carácter que separa los campos en la línea.
+    /// @param out [out] Referencia al objeto Song donde se guardarán los datos extraídos.
+    /// @return true si la línea se procesó correctamente, false si hubo un error de formato.
+    static bool parseSongLine(const string& line, char delimiter, Song& out);
+
+    /// @brief Carga todas las canciones de un archivo físico hacia la memoria del programa.
+    /// @param filePath La ruta del archivo a leer (ej. "music_source.txt").
+    /// @param songs [out] Referencia a la lista enlazada donde se almacenarán las canciones.
+    /// @return true si se cargó al menos una canción, false si el archivo no existe o está vacío.
+    static bool loadSongs(const string& filePath, LinkedList<Song>& songs);
+
+    /// @brief Añade una nueva canción al final de un archivo existente sin sobreescribir el resto.
+    /// @param filePath La ruta del archivo físico.
+    /// @param song El objeto Song que se desea guardar.
+    /// @param delimiter El carácter que se usará para separar los campos de la canción.
+    /// @return true si se guardó correctamente, false si hubo un error de acceso al disco.
+    static bool appendSong(const string& filePath, const Song& song, char delimiter);
+};
+
+
+
+/// @file Reproductor.hpp
+/// @brief Núcleo lógico de la aplicación y controlador de la interfaz de consola.
+
+/// @class Reproductor
+/// @brief Controlador principal que gestiona el estado y la navegación de la música.
+///
+/// Encapsula la fonoteca (Lista Doblemente Enlazada), gestiona el puntero de reproducción actual,
+/// procesa los comandos del usuario mediante consola y administra los modos de reproducción 
+/// (Aleatorio, Bucle, etc.).
+class Reproductor {
+private:
+    // ... (atributos y métodos privados)
+
+    /// @brief Genera el bloque de texto con el estado actual según la rúbrica.
+    /// @return String formateado, ej: "Reproduciendo (S-R1)"
+    std::string obtenerTextoEstado() const;
+
+    /// @brief Avanza el puntero de reproducción a la pista siguiente.
+    /// Evalúa si el modo aleatorio o de repetición están activos para calcular el salto.
+    void siguienteCancion();
+
+    /// @brief Retrocede el puntero de reproducción a la pista anterior usando el enlace doble.
+    void anteriorCancion();
+
+public:
+    /// @brief Inicializa el reproductor preparando su estado base y la ruta de datos.
+    /// @param ruta El nombre o ruta del archivo de texto fuente (ej. "music_source.txt").
+    Reproductor(std::string ruta);
+
+    /// @brief Destructor del reproductor. Libera recursos antes de cerrar.
+    ~Reproductor();
+    
+    /// @brief Arranca el motor principal del programa. 
+    /// Carga los archivos a memoria e inicia el bucle infinito del menú de consola.
+    void iniciar();
+};
