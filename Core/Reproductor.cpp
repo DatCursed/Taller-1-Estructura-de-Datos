@@ -147,10 +147,38 @@ void Reproductor::mostrarSubmenuA() {
         getline(cin, entrada);
 
         if (entrada.empty()) continue;
-        if (toupper(entrada[0]) == 'V') enSubmenu = false;
 
+        char comando = toupper(entrada[0]);
+
+        if (comando == 'V') {
+            enSubmenu = false;
+        }
+        else if (comando == 'S' && entrada.length() > 1) {
+            try {
+                
+                int saltos = stoi(entrada.substr(1));
+                auto temp = nodoActual;
+
+                
+                for (int i = 0; i < saltos && temp != nullptr; i++) {
+                    temp = temp->next;
+                }
+
+                
+                if (temp != nullptr) {
+                    nodoActual = temp;
+                    estadoActual = 1; 
+                    enSubmenu = false; 
+                }
+            } catch (const exception& e) {
+                continue;
+            }
+        }
     }
 }
+
+
+
 
 void Reproductor::mostrarSubmenuL() {
     bool enSubmenu = true;
@@ -195,13 +223,71 @@ void Reproductor::mostrarSubmenuL() {
         if (entrada.empty()) continue;
 
         char comando = toupper(entrada[0]);
-        if (comando == 'V') enSubmenu = false;
+
+        if (comando == 'V') {
+            enSubmenu = false;
+        }
         else if (comando == 'N') {
             agregarNuevaCancion();
         }
-        
+        else if ((comando == 'R' || comando == 'A' || comando == 'D') && entrada.length() > 1) {
+            try {
+                int id = stoi(entrada.substr(1)); 
+
+                if (comando == 'R') {
+                    // R<num>: Reproducir
+                    auto temp = fonoteca.getHead();
+                    while (temp != nullptr) {
+                        if (temp->data.getId() == id) {
+                            nodoActual = temp;
+                            estadoActual = 1; 
+                            enSubmenu = false;
+                            break;
+                        }
+                        temp = temp->next;
+                    }
+                }
+                else if (comando == 'D') {
+                    
+                    auto temp = fonoteca.getHead();
+                    int index = 0;
+                    while (temp != nullptr) {
+                        if (temp->data.getId() == id) {
+                            
+                            if (nodoActual != nullptr && nodoActual->data.getId() == id) {
+                                nodoActual = nullptr;
+                                estadoActual = 0;
+                            }
+                            fonoteca.removeAt(index);
+                            
+                            FileManager::saveSongs(rutaArchivo, fonoteca, ',');
+                            break;
+                        }
+                        temp = temp->next;
+                        index++;
+                    }
+                }
+                else if (comando == 'A') {
+                    
+                    auto temp = fonoteca.getHead();
+                    while (temp != nullptr) {
+                        if (temp->data.getId() == id) {
+                            
+                            fonoteca.pushBack(temp->data);
+                            break;
+                        }
+                        temp = temp->next;
+                    }
+                }
+            } catch (const exception& e) {
+                
+                continue;
+            }
+        }
     }
 }
+
+
 
 void Reproductor::alternarPlayPausa() {
     if (fonoteca.isEmpty()) return;
