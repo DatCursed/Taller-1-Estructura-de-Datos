@@ -2,8 +2,8 @@
 
 
 **Integrantes del equipo:**
-* [Diego Seco]
-* [David Rodriguez]
+* [Diego Seco ICCI 21.892.538-3]
+* [David Rodriguez ICCI 21.806.579-1]
 
 ## Descripción del Proyecto
 es un reproductor de música interactivo ejecutado mediante la consola de comandos, programado íntegramente en C++. Este proyecto aplica conceptos de Estructuras de Datos mediante la implementación manual de una Lista Doblemente Enlazada Genérica (Templates). El sistema gestiona estados de reproducción, carga persistente de pistas desde archivos de texto y cuenta con algoritmos personalizados para modos de reproducción aleatoria y repetición cíclica.
